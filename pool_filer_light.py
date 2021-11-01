@@ -58,10 +58,10 @@ def on_message_filter(client, userdata, msg):
     reg_A = read_data(i2c_addr, i2c_register[0])
     if message == "0":
         write_data(i2c_addr,i2c_register[0],clear_bit(reg_A,2))
-        client.publish(pub_topic_filter, "Off")
+        client.publish(pub_topic_filter, "off")
     elif message == "1":
         write_data(i2c_addr,i2c_register[0],set_bit(reg_A,2))
-        client.publish(pub_topic_filter, "On")
+        client.publish(pub_topic_filter, "on")
 
 def on_message_light(client, userdata, msg):
     message = str(msg.payload.decode("utf-8"))
@@ -70,10 +70,10 @@ def on_message_light(client, userdata, msg):
     print(reg_A)
     if message == "0":
         write_data(i2c_addr,i2c_register[0],clear_bit(reg_A,1))
-        client.publish(pub_topic_light, "Off")
+        client.publish(pub_topic_light, "off")
     elif message == "1":
         write_data(i2c_addr,i2c_register[0],set_bit(reg_A,1))
-        client.publish(pub_topic_light, "On")
+        client.publish(pub_topic_light, "on")
 
 def on_message_state(client, userdata, msg):
     message = str(msg.payload.decode("utf-8"))
