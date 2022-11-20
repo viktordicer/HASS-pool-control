@@ -30,10 +30,12 @@ sub_topic_filter = "command/pool/filter"
 sub_topic_light = "command/pool/light"
 sub_topic_state = "command/pool/state"
 sub_topic_ph = "command/pool/ph"
+sub_topic_batery = "command/pool/batery"
 
 pub_topic_filter = "sensor/pool/filter"
 pub_topic_light = "sensor/pool/light"
 pub_topic_ph = "sensor/pool/ph"
+pub_topic_batery = "sensor/pool/batery"
 
 #Set bit function	
 def set_bit(value, bit):
@@ -66,22 +68,22 @@ def on_message_filter(client, userdata, msg):
     print("message:" + message)
     reg_A = read_data(i2c_addr, i2c_register[0])
     if message == "0":
-        write_data(i2c_addr,i2c_register[0],clear_bit(reg_A,2))
+        write_data(i2c_addr,i2c_register[0],clear_bit(reg_A,1))
         client.publish(pub_topic_filter, "Off")
     elif message == "1":
-        write_data(i2c_addr,i2c_register[0],set_bit(reg_A,2))
+        write_data(i2c_addr,i2c_register[0],set_bit(reg_A,1))
         client.publish(pub_topic_filter, "On")
 
 def on_message_light(client, userdata, msg):
     message = str(msg.payload.decode("utf-8"))
     print("message:" + message)
-    reg_A = read_data(i2c_addr, i2c_register[0])
-    print(reg_A)
+    reg_B = read_data(i2c_addr, i2c_register[1])
+    print(reg_B)
     if message == "0":
-        write_data(i2c_addr,i2c_register[0],clear_bit(reg_A,1))
+        write_data(i2c_addr,i2c_register[1],clear_bit(reg_B,1))
         client.publish(pub_topic_light, "Off")
     elif message == "1":
-        write_data(i2c_addr,i2c_register[0],set_bit(reg_A,1))
+        write_data(i2c_addr,i2c_register[1],set_bit(reg_B,1))
         client.publish(pub_topic_light, "On")
         
 def on_message_ph(client, userdata, msg):
@@ -90,25 +92,40 @@ def on_message_ph(client, userdata, msg):
     reg_A = read_data(i2c_addr, i2c_register[0])
     print(reg_A)
     if message == "0":
-        write_data(i2c_addr,i2c_register[0],clear_bit(reg_A,4))
-        client.publish(pub_topic_light, "Off")
+        write_data(i2c_addr,i2c_register[0],clear_bit(reg_A,2))
+        client.publish(pub_topic_ph, "Off")
     elif message == "1":
-        write_data(i2c_addr,i2c_register[0],set_bit(reg_A,4))
-        client.publish(pub_topic_light, "On")
+        write_data(i2c_addr,i2c_register[0],set_bit(reg_A,2))
+        client.publish(pub_topic_ph, "On")
+        
+def on_message_batery(client, userdata, msg):
+    message = str(msg.payload.decode("utf-8"))
+    print("message:" + message)
+    reg_B = read_data(i2c_addr, i2c_register[1])
+    print(reg_B)
+    if message == "0":
+        write_data(i2c_addr,i2c_register[1],clear_bit(reg_B,2))
+        client.publish(pub_topic_ph, "Off")
+    elif message == "1":
+        write_data(i2c_addr,i2c_register[1],set_bit(reg_B,2))
+        client.publish(pub_topic_ph, "On")
 
 def on_message_state(client, userdata, msg):
     message = str(msg.payload.decode("utf-8"))
     print("message:" + message)
     reg_A = read_data(i2c_addr, i2c_register[0])
-    client.publish(pub_topic_filter, is_bit_set(reg_A,2))
-    client.publish(pub_topic_light, is_bit_set(reg_A,1))
-    client.publish(pub_topic_ph, is_bit_set(reg_A,4))
+    reg_B = read_data(i2c_addr, i2c_register[1])
+    client.publish(pub_topic_filter, is_bit_set(reg_A,1))
+    client.publish(pub_topic_light, is_bit_set(reg_B,1))
+    client.publish(pub_topic_ph, is_bit_set(reg_A,2))
+    client.publish(pub_topic_batery, is_bit_set(reg_B,2))
 
 client = mqtt.Client()
 client.on_connect = on_connect
 client.message_callback_add(sub_topic_filter, on_message_filter)
 client.message_callback_add(sub_topic_light, on_message_light)
 client.message_callback_add(sub_topic_ph, on_message_ph)
+client.message_callback_add(sub_topic_batery, on_message_batery)
 client.message_callback_add(sub_topic_state, on_message_state)
 client.username_pw_set(username="viktor", password="viktor")
 client.connect(Broker, 1883, 60)
